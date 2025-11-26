@@ -8,10 +8,13 @@ FROM php:7.4-fpm
 # ==========================================
 RUN apt-get update && apt-get install -y \
     libzip-dev \
+    libpng-dev \
+    libjpeg62-turbo-dev \
     unzip \
     git \
     curl \
-    && docker-php-ext-install zip pdo pdo_mysql
+    && docker-php-ext-configure gd --with-jpeg \
+    && docker-php-ext-install gd zip pdo pdo_mysql
 
 # ==========================================
 #          INSTALAR COMPOSER
