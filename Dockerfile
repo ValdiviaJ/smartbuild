@@ -7,13 +7,13 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
-    zip \
-    unzip \
     git \
-    curl
+    curl \
+    zip \
+    unzip
 
 # Instalar extensiones PHP necesarias para Laravel
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath zip gd
 
 # Instalar Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -29,5 +29,7 @@ RUN composer install --no-dev --prefer-dist --optimize-autoloader
 
 # Dar permisos
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+EXPOSE 10000
 
 CMD php artisan serve --host=0.0.0.0 --port=10000
