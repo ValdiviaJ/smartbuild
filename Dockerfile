@@ -1,35 +1,54 @@
-FROM php:8.2-fpm
+# ==========================================
+#          BASE IMAGE PHP 7.4 FPM
+# ==========================================
+FROM php:7.4-fpm
 
-# Instalar dependencias del sistema
+# ==========================================
+#      INSTALAR DEPENDENCIAS DEL SISTEMA
+# ==========================================
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
     libzip-dev \
+    unzip \
     git \
     curl \
-    zip \
-    unzip
+    && docker-php-ext-install zip pdo pdo_mysql
 
-# Instalar extensiones PHP necesarias para Laravel
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath zip gd
-
-# Instalar Composer
+# ==========================================
+#          INSTALAR COMPOSER
+# ==========================================
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Crear carpeta app
-WORKDIR /var/www
+# ==========================================
+#         DIRECTORIO DE TRABAJO
+# ==========================================
+WORKDIR /var/www/html
 
-# Copiar archivos de Laravel
+# ==========================================
+#          COPIAR PROYECTO COMPLETO
+# ==========================================
 COPY . .
 
-# Instalar dependencias PHP
+# ==========================================
+#      INSTALAR DEPENDENCIAS DE LARAVEL
+# ==========================================
 RUN composer install --no-dev --prefer-dist --optimize-autoloader
 
-# Dar permisos
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+# ==========================================
+#              PERMISOS
+# ==========================================
+RUN chown -R www-data:www-data storage bootstrap/cache
 
-EXPOSE 10000
+# ==========================================
+#      GENERAR APP_KEY (IGNORAR SI EXISTE)
+# ==========================================
+RUN php artisan key:generate || true
 
-CMD php artisan serve --host=0.0.0.0 --port=10000
+# ==========================================
+#         PUERTO DE LARAVEL
+# ==========================================
+EXPOSE 8000
+
+# ==========================================
+#         COMANDO DE INICIO
+# ==========================================
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
